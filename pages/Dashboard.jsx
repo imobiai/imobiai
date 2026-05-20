@@ -1,22 +1,20 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User, Conversa, Documento } from "@/api/entities";
+import { User } from "@/api/entities";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
-  const [conversasRecentes, setConversasRecentes] = useState([]);
-  const [docRecentes, setDocRecentes] = useState([]);
   const [sidebarAberta, setSidebarAberta] = useState(false);
 
   useEffect(() => {
     User.me().then(setUsuario).catch(() => setUsuario(null));
-    Conversa.list("-created_date").then((c) => setConversasRecentes(c.slice(0, 8))).catch(() => {});
-    Documento.list("-created_date").then((d) => setDocRecentes(d.slice(0, 5))).catch(() => {});
   }, []);
 
   const handleLogout = async () => {
-    await User.logout();
+    try {
+      await User.logout();
+    } catch (e) {}
     setUsuario(null);
     window.location.reload();
   };
@@ -59,13 +57,11 @@ export default function Dashboard() {
           sidebarAberta ? "translate-x-0" : "-translate-x-full"
         } md:relative md:translate-x-0 md:flex md:w-64`}
       >
-        {/* Logo */}
         <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
           <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-lg">🏢</div>
           <span className="font-semibold text-white text-base">ImobiAI</span>
         </div>
 
-        {/* Ações rápidas */}
         <div className="px-3 pt-3">
           <button
             onClick={() => navigate("/chat")}
@@ -83,39 +79,8 @@ export default function Dashboard() {
           </button>
         </div>
 
-        {/* Histórico recente */}
-        <div className="flex-1 overflow-y-auto px-3 pt-5 pb-3">
-          {conversasRecentes.length > 0 && (
-            <>
-              <p className="text-xs text-white/40 font-medium px-2 mb-2 uppercase tracking-wider">Recentes</p>
-              {conversasRecentes.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => navigate("/historico")}
-                  className="w-full text-left px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-white/10 truncate transition"
-                >
-                  {c.titulo}
-                </button>
-              ))}
-            </>
-          )}
-          {docRecentes.length > 0 && (
-            <>
-              <p className="text-xs text-white/40 font-medium px-2 mt-4 mb-2 uppercase tracking-wider">Documentos</p>
-              {docRecentes.map((d) => (
-                <button
-                  key={d.id}
-                  onClick={() => navigate("/documentos")}
-                  className="w-full text-left px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-white/10 truncate transition"
-                >
-                  📄 {d.titulo}
-                </button>
-              ))}
-            </>
-          )}
-        </div>
+        <div className="flex-1" />
 
-        {/* Footer do sidebar */}
         <div className="border-t border-white/10 p-3 space-y-1">
           {usuario?.role === "admin" && (
             <button
@@ -138,7 +103,6 @@ export default function Dashboard() {
             <span>📁</span> Meus documentos
           </button>
 
-          {/* Usuário logado ou botão de login */}
           {usuario ? (
             <div
               className="flex items-center gap-2 px-3 py-2 mt-1 rounded-lg hover:bg-white/10 transition cursor-pointer group"
@@ -149,9 +113,6 @@ export default function Dashboard() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-white/80 truncate">{usuario.full_name || usuario.email}</p>
-                {usuario.tipo_usuario && (
-                  <p className="text-xs text-white/40 truncate">{usuario.tipo_usuario}</p>
-                )}
               </div>
               <span className="text-xs text-white/30 group-hover:text-white/60 transition">Sair</span>
             </div>
@@ -176,7 +137,6 @@ export default function Dashboard() {
 
       {/* CONTEÚDO PRINCIPAL */}
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Topbar mobile */}
         <div className="flex items-center px-4 py-3 md:hidden border-b border-white/10">
           <button onClick={() => setSidebarAberta(true)} className="text-white/60 hover:text-white text-xl mr-3">
             ☰
@@ -187,11 +147,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Área central */}
         <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center px-4 py-12">
           <div className="w-full max-w-2xl">
-
-            {/* Saudação */}
             <div className="text-center mb-10">
               <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5 shadow-lg">
                 🏢
@@ -202,7 +159,6 @@ export default function Dashboard() {
               <p className="text-white/50 text-lg">Como posso ajudar com direito imobiliário hoje?</p>
             </div>
 
-            {/* Barra de pergunta rápida */}
             <div
               onClick={() => navigate("/chat")}
               className="w-full flex items-center gap-3 bg-[#2f2f2f] hover:bg-[#3a3a3a] border border-white/10 rounded-2xl px-5 py-4 cursor-pointer transition mb-8 group"
@@ -212,7 +168,6 @@ export default function Dashboard() {
               <span className="text-white/20 group-hover:text-white/40 text-sm transition">↵</span>
             </div>
 
-            {/* Sugestões */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {sugestoes.map((s, i) => (
                 <button

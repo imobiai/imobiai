@@ -5,8 +5,7 @@ import { User, Conversa, Documento } from "@/api/entities";
 export default function Admin() {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
-  const [aba, setAba] = useState("usuarios");
-  const [usuarios, setUsuarios] = useState([]);
+  const [aba, setAba] = useState("conversas");
   const [conversas, setConversas] = useState([]);
   const [documentos, setDocumentos] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -14,25 +13,23 @@ export default function Admin() {
   useEffect(() => {
     User.me()
       .then((u) => {
-        if (u.role !== "admin") {
+        if (u?.role !== "admin") {
           navigate("/");
           return;
         }
         setUsuario(u);
         carregarDados();
       })
-      .catch(() => navigate("/login"));
+      .catch(() => navigate("/"));
   }, []);
 
   const carregarDados = async () => {
     setCarregando(true);
     try {
-      const [us, convs, docs] = await Promise.all([
-        User.list(),
+      const [convs, docs] = await Promise.all([
         Conversa.list("-created_date"),
         Documento.list("-created_date"),
       ]);
-      setUsuarios(us);
       setConversas(convs);
       setDocumentos(docs);
     } catch (err) {
@@ -59,11 +56,10 @@ export default function Admin() {
   };
 
   const stats = [
-    { label: "Usuários", valor: usuarios.length, icon: "👥", cor: "bg-blue-50 text-blue-700" },
     { label: "Consultas", valor: conversas.length, icon: "💬", cor: "bg-orange-50 text-orange-700" },
     { label: "Documentos", valor: documentos.length, icon: "📄", cor: "bg-green-50 text-green-700" },
     {
-      label: "Msgs hoje",
+      label: "Hoje",
       valor: conversas.filter((c) => {
         const hoje = new Date().toDateString();
         return new Date(c.created_date).toDateString() === hoje;
@@ -77,7 +73,6 @@ export default function Admin() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <div className="bg-gray-900 text-white px-4 py-3 flex items-center gap-3 shadow">
         <button onClick={() => navigate("/")} className="text-gray-400 hover:text-white text-xl">←</button>
         <span className="text-xl">🛡️</span>
@@ -89,8 +84,7 @@ export default function Admin() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
-        {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        <div className="grid grid-cols-3 gap-3 mb-6">
           {stats.map((s) => (
             <div key={s.label} className={`${s.cor} rounded-2xl p-4 text-center`}>
               <div className="text-2xl mb-1">{s.icon}</div>
@@ -100,10 +94,8 @@ export default function Admin() {
           ))}
         </div>
 
-        {/* Abas */}
         <div className="flex gap-2 mb-4">
           {[
-            { key: "usuarios", label: "👥 Usuários" },
             { key: "conversas", label: "💬 Consultas" },
             { key: "documentos", label: "📄 Documentos" },
           ].map((tab) => (
@@ -125,40 +117,6 @@ export default function Admin() {
           <div className="text-center text-gray-400 py-16">Carregando...</div>
         ) : (
           <>
-            {/* Usuários */}
-            {aba === "usuarios" && (
-              <div className="space-y-3">
-                {usuarios.length === 0 && (
-                  <p className="text-center text-gray-400 py-8">Nenhum usuário cadastrado.</p>
-                )}
-                {usuarios.map((u) => (
-                  <div key={u.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-lg font-bold text-gray-600">
-                      {(u.full_name || u.email || "?")[0].toUpperCase()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-gray-800 truncate">{u.full_name || "—"}</p>
-                      <p className="text-xs text-gray-400 truncate">{u.email}</p>
-                    </div>
-                    <div className="flex flex-col items-end gap-1">
-                      {u.tipo_usuario && (
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PERFIL_COR[u.tipo_usuario] || "bg-gray-100 text-gray-600"}`}>
-                          {u.tipo_usuario}
-                        </span>
-                      )}
-                      {u.role === "admin" && (
-                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-medium">admin</span>
-                      )}
-                      <span className="text-xs text-gray-400">
-                        {new Date(u.created_date).toLocaleDateString("pt-BR")}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Consultas */}
             {aba === "conversas" && (
               <div className="space-y-3">
                 {conversas.length === 0 && (
@@ -183,7 +141,6 @@ export default function Admin() {
               </div>
             )}
 
-            {/* Documentos */}
             {aba === "documentos" && (
               <div className="space-y-3">
                 {documentos.length === 0 && (
