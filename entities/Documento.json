@@ -2,15 +2,7 @@
   "type": "object",
   "properties": {
     "tipo": {
-      "type": "string",
-      "enum": [
-        "Contrato de Loca\u00e7\u00e3o",
-        "Notifica\u00e7\u00e3o Extrajudicial",
-        "Rescis\u00e3o de Contrato",
-        "Proposta de Compra e Venda",
-        "Vistoria de Im\u00f3vel",
-        "Outro"
-      ]
+      "type": "string"
     },
     "titulo": {
       "type": "string"
@@ -29,6 +21,7 @@
       ]
     }
   },
+  "rls_enabled": true,
   "required": [],
   "name": "Documento"
 }

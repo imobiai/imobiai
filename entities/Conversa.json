@@ -5,29 +5,20 @@
       "type": "string"
     },
     "tipo_usuario": {
-      "type": "string",
-      "enum": [
-        "Imobili\u00e1ria",
-        "Corretor",
-        "Propriet\u00e1rio",
-        "Advogado",
-        "Outro"
-      ]
+      "type": "string"
     },
     "mensagens": {
-      "type": "array",
-      "items": {
-        "type": "object"
-      }
+      "type": "array"
     },
     "status": {
       "type": "string",
       "enum": [
         "ativa",
-        "encerrada"
+        "arquivada"
       ]
     }
   },
+  "rls_enabled": true,
   "required": [],
   "name": "Conversa"
 }

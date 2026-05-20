@@ -1,8 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { User } from "@/api/entities";
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [usuario, setUsuario] = useState(null);
+
+  useEffect(() => {
+    User.me().then(setUsuario).catch(() => {});
+  }, []);
+
+  const handleLogout = async () => {
+    await User.logout();
+    window.location.href = "/login";
+  };
 
   const cards = [
     {
@@ -47,18 +58,35 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-6 py-10">
+      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-6 py-6">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-4xl">🏢</span>
-            <h1 className="text-3xl font-bold">ImobiAI</h1>
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <span className="text-4xl">🏢</span>
+                <h1 className="text-3xl font-bold">ImobiAI</h1>
+              </div>
+              <p className="text-blue-200 text-sm">
+                IA especializada em Direito Imobiliário Brasileiro
+              </p>
+            </div>
+            {usuario && (
+              <div className="text-right">
+                <p className="text-blue-100 text-sm font-medium">
+                  👤 {usuario.full_name || usuario.email}
+                </p>
+                {usuario.tipo_usuario && (
+                  <p className="text-blue-300 text-xs">{usuario.tipo_usuario}</p>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="mt-2 text-xs text-blue-300 hover:text-white underline"
+                >
+                  Sair
+                </button>
+              </div>
+            )}
           </div>
-          <p className="text-blue-200 text-lg">
-            Sua IA especializada em Direito Imobiliário Brasileiro
-          </p>
-          <p className="text-blue-300 text-sm mt-1">
-            Lei do Inquilinato · Compra e Venda · Contratos · Documentos
-          </p>
         </div>
       </div>
 
@@ -96,7 +124,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Rodapé informativo */}
         <p className="text-center text-gray-400 text-xs mt-8">
           ⚠️ As respostas do ImobiAI são orientativas e não substituem consultoria jurídica formal.
         </p>

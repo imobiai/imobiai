@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "tipo_usuario": {
+      "type": "string",
+      "enum": [
+        "Imobili\u00e1ria",
+        "Corretor",
+        "Propriet\u00e1rio",
+        "Advogado",
+        "Outro"
+      ]
+    }
+  },
+  "required": []
+}
