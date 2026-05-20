@@ -1,0 +1,37 @@
+{
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "senha_hash": {
+      "type": "string"
+    },
+    "tipo_usuario": {
+      "type": "string",
+      "enum": [
+        "Imobili\u00e1ria",
+        "Corretor",
+        "Propriet\u00e1rio",
+        "Advogado",
+        "Outro"
+      ]
+    },
+    "plano": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro",
+        "admin"
+      ]
+    },
+    "ativo": {
+      "type": "boolean"
+    }
+  },
+  "required": [],
+  "name": "UsuarioImobiai"
+}
