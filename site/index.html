@@ -362,53 +362,178 @@
     </div>
   </section>
 
-  <!-- DEMO CHAT -->
+  <!-- DEMO CHAT INTERATIVO -->
   <section class="demo" id="demo">
     <div class="demo-container">
       <div class="text-center fade-in">
-        <span class="section-tag">Veja na prática</span>
-        <h2 class="section-title">Uma conversa real com o ImobiAI</h2>
-        <p class="section-sub">Experimente o poder de ter um especialista jurídico disponível a qualquer momento.</p>
+        <span class="section-tag">Experimente agora</span>
+        <h2 class="section-title">Converse com o ImobiAI agora mesmo</h2>
+        <p class="section-sub">Sem cadastro, sem instalação. Faça uma pergunta jurídica real e receba a resposta na hora.</p>
       </div>
-      <div class="chat-window fade-in">
+
+      <div class="chat-window fade-in" id="live-chat">
         <div class="chat-header">
           <span class="chat-header-logo">🏢</span>
           <div class="chat-header-info">
             <strong>ImobiAI</strong>
-            <span>● Online agora</span>
+            <span id="status-dot">● Online agora</span>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="chip-btn" onclick="enviarSugestao('Inquilino não paga há 2 meses. O que fazer?')">💸 Inadimplência</button>
+            <button class="chip-btn" onclick="enviarSugestao('Como rescindir um contrato de locação antes do prazo?')">📋 Rescisão</button>
+            <button class="chip-btn" onclick="enviarSugestao('Quais garantias posso exigir na locação?')">🔐 Garantias</button>
           </div>
         </div>
-        <div class="chat-body">
-          <div class="msg user">
-            <div class="msg-label">Você</div>
-            <div class="msg-bubble">Meu inquilino está há 3 meses sem pagar aluguel. O que posso fazer?</div>
-          </div>
+
+        <div class="chat-body" id="chat-messages">
           <div class="msg bot">
             <div class="msg-label">ImobiAI</div>
-            <div class="msg-bubble">Você pode entrar com <strong>Ação de Despejo por Falta de Pagamento</strong>, prevista no art. 9º da Lei do Inquilinato (Lei 8.245/91).<br><br>
-            O processo recomendado é:<br>
-            1️⃣ Envie uma <strong>notificação extrajudicial</strong> dando 10 dias para quitação<br>
-            2️⃣ Se não pagar, protocole a ação de despejo no fórum da comarca do imóvel<br>
-            3️⃣ Reúna: contrato de locação, comprovantes de inadimplência e a notificação enviada<br><br>
-            ⚠️ O prazo médio para desocupação judicial é de 3 a 6 meses. Quer que eu gere a notificação extrajudicial agora?</div>
-          </div>
-          <div class="msg user">
-            <div class="msg-label">Você</div>
-            <div class="msg-bubble">Sim! Gera a notificação para mim.</div>
-          </div>
-          <div class="msg bot">
-            <div class="msg-label">ImobiAI</div>
-            <div class="msg-bubble">Perfeito! Vou precisar de alguns dados:<br><br>
-            • Nome completo do proprietário (locador)<br>
-            • Nome completo do inquilino (locatário)<br>
-            • Endereço do imóvel<br>
-            • Valor total em atraso<br><br>
-            Informe esses dados e gero o documento completo em segundos. 📄</div>
+            <div class="msg-bubble">Olá! 👋 Sou o ImobiAI, especialista em Direito Imobiliário Brasileiro.<br><br>Posso ajudar com dúvidas sobre a <strong>Lei do Inquilinato</strong>, contratos, rescisões, inadimplência, compra e venda e muito mais.<br><br>Como posso te ajudar hoje?</div>
           </div>
         </div>
+
+        <div class="chat-input-area">
+          <textarea id="chat-input" placeholder="Digite sua pergunta jurídica... (Ex: Inquilino não paga, o que fazer?)" rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+          <button id="send-btn" onclick="enviarMensagem()" title="Enviar">↑</button>
+        </div>
+        <p class="chat-disclaimer">⚠️ Respostas são orientativas e não substituem consultoria jurídica formal.</p>
       </div>
     </div>
   </section>
+
+  <style>
+    .chip-btn {
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.7); padding: 5px 12px; border-radius: 999px;
+      font-size: 0.75rem; cursor: pointer; transition: all .2s; white-space: nowrap;
+      font-family: inherit;
+    }
+    .chip-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+    .chat-input-area {
+      display: flex; align-items: flex-end; gap: 10px;
+      padding: 12px 16px 14px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+      background: #1a2a3a;
+    }
+    #chat-input {
+      flex: 1; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px; padding: 10px 14px; color: white; font-size: 0.88rem;
+      font-family: inherit; resize: none; outline: none; line-height: 1.5;
+      max-height: 120px; overflow-y: auto; transition: border-color .2s;
+    }
+    #chat-input:focus { border-color: rgba(37,99,235,0.6); }
+    #chat-input::placeholder { color: rgba(255,255,255,0.25); }
+    #send-btn {
+      width: 38px; height: 38px; border-radius: 10px; border: none; flex-shrink: 0;
+      background: #2563eb; color: white; cursor: pointer; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s; font-family: inherit;
+    }
+    #send-btn:hover { background: #1d4ed8; transform: scale(1.05); }
+    #send-btn:disabled { background: rgba(255,255,255,0.08); color: rgba(255,255,255,0.2); cursor: not-allowed; transform: none; }
+    .chat-disclaimer {
+      text-align: center; color: rgba(255,255,255,0.2);
+      font-size: 0.7rem; padding: 8px 16px 12px; background: #1a2a3a;
+    }
+    .typing-indicator { display: flex; gap: 5px; padding: 4px 0; }
+    .typing-indicator span {
+      width: 7px; height: 7px; border-radius: 50%; background: #60a5fa;
+      animation: typing 1.2s ease-in-out infinite;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%,100%{opacity:.25;transform:scale(.8)} 50%{opacity:1;transform:scale(1.1)} }
+    #chat-messages { max-height: 420px; overflow-y: auto; }
+    #chat-messages::-webkit-scrollbar { width: 4px; }
+    #chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+  </style>
+
+  <script>
+    const API_URL = 'https://app.base44.com/api/apps/6a0cc4f6b295247520aec671/functions/consultaJuridica';
+    let historico = [];
+    let enviando = false;
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function handleKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); enviarMensagem(); }
+    }
+
+    function enviarSugestao(texto) {
+      document.getElementById('chat-input').value = texto;
+      enviarMensagem();
+    }
+
+    function addMsg(role, content) {
+      const container = document.getElementById('chat-messages');
+      const div = document.createElement('div');
+      div.className = 'msg ' + (role === 'user' ? 'user' : 'bot');
+      div.innerHTML = `<div class="msg-label">${role === 'user' ? 'Você' : 'ImobiAI'}</div>
+        <div class="msg-bubble">${role === 'user' ? escapeHtml(content) : formatarTexto(content)}</div>`;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+      return div;
+    }
+
+    function escapeHtml(t) {
+      return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    function formatarTexto(t) {
+      return t
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/^- (.*?)(\n|$)/gm, '<li style="margin-left:18px;margin-bottom:3px">$1</li>')
+        .replace(/^\d+\. (.*?)(\n|$)/gm, '<li style="margin-left:18px;list-style:decimal;margin-bottom:3px">$1</li>')
+        .replace(/\n\n/g,'<br><br>').replace(/\n/g,'<br>');
+    }
+
+    async function enviarMensagem() {
+      const input = document.getElementById('chat-input');
+      const msg = input.value.trim();
+      if (!msg || enviando) return;
+
+      enviando = true;
+      document.getElementById('send-btn').disabled = true;
+      input.value = ''; input.style.height = 'auto';
+
+      addMsg('user', msg);
+
+      // Indicador de digitação
+      const container = document.getElementById('chat-messages');
+      const typing = document.createElement('div');
+      typing.className = 'msg bot'; typing.id = 'typing';
+      typing.innerHTML = '<div class="msg-label">ImobiAI</div><div class="msg-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+      container.appendChild(typing);
+      container.scrollTop = container.scrollHeight;
+
+      try {
+        historico.push({ role: 'user', content: msg });
+
+        const res = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ mensagem: msg, historico: historico.slice(-8), tipo_usuario: 'Visitante' })
+        });
+
+        const data = await res.json();
+        const resposta = data.resposta || 'Erro ao obter resposta. Tente novamente.';
+        historico.push({ role: 'assistant', content: resposta });
+
+        document.getElementById('typing')?.remove();
+        addMsg('bot', resposta);
+      } catch(e) {
+        document.getElementById('typing')?.remove();
+        addMsg('bot', 'Erro de conexão. Por favor, tente novamente em instantes.');
+      } finally {
+        enviando = false;
+        document.getElementById('send-btn').disabled = false;
+        input.focus();
+      }
+    }
+  </script>
 
   <!-- DOCUMENTOS -->
   <section id="documentos">
