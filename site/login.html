@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ImobiAI — Entrar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --brand:#2563eb; --brand-dark:#1d4ed8;
+      --bg:#171717; --card:#1e1e1e; --input-bg:#2a2a2a;
+      --border:#333; --text:#ececec; --muted:#8e8ea0; --danger:#ef4444;
+      --success:#10b981;
+    }
+    html,body{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text)}
+    body{display:flex;align-items:center;justify-content:center;padding:20px;min-height:100vh}
+
+    .card{
+      width:100%;max-width:420px;
+      background:var(--card);border:1px solid var(--border);
+      border-radius:18px;padding:40px 36px;
+    }
+    .logo{display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:32px}
+    .logo-icon{width:42px;height:42px;border-radius:11px;background:var(--brand);
+      display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+    .logo-text{font-size:1.25rem;font-weight:700}
+
+    .tabs{display:flex;background:#111;border-radius:10px;padding:4px;margin-bottom:28px}
+    .tab{flex:1;padding:9px;border:none;border-radius:8px;cursor:pointer;
+      font-size:.875rem;font-weight:500;font-family:'Inter',sans-serif;
+      background:none;color:var(--muted);transition:all .2s}
+    .tab.active{background:var(--card);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+    label{display:block;font-size:.8rem;font-weight:500;color:var(--muted);margin-bottom:6px}
+    .field{margin-bottom:16px}
+    input,select{
+      width:100%;padding:11px 14px;
+      background:var(--input-bg);border:1px solid var(--border);
+      border-radius:9px;color:var(--text);font-size:.9rem;font-family:'Inter',sans-serif;
+      outline:none;transition:border-color .2s;
+    }
+    input:focus,select:focus{border-color:var(--brand)}
+    select option{background:#222}
+
+    .btn{
+      width:100%;padding:13px;border:none;border-radius:10px;
+      background:var(--brand);color:#fff;font-size:.95rem;font-weight:600;
+      font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;margin-top:4px;
+    }
+    .btn:hover:not(:disabled){background:var(--brand-dark)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    .divider{text-align:center;margin:20px 0;font-size:.8rem;color:var(--muted);
+      position:relative}
+    .divider::before,.divider::after{content:'';position:absolute;top:50%;
+      width:42%;height:1px;background:var(--border)}
+    .divider::before{left:0} .divider::after{right:0}
+
+    .btn-ghost{
+      width:100%;padding:13px;border:1px solid var(--border);border-radius:10px;
+      background:none;color:var(--text);font-size:.9rem;font-weight:500;
+      font-family:'Inter',sans-serif;cursor:pointer;transition:all .2s;
+    }
+    .btn-ghost:hover{background:rgba(255,255,255,.05)}
+
+    .alert{
+      padding:10px 14px;border-radius:8px;font-size:.83rem;margin-bottom:14px;
+      display:none;
+    }
+    .alert.error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);color:#fca5a5}
+    .alert.success{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#6ee7b7}
+
+    .footer-link{text-align:center;margin-top:20px;font-size:.8rem;color:var(--muted)}
+    .footer-link a{color:#60a5fa;text-decoration:none}
+    .footer-link a:hover{text-decoration:underline}
+
+    .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
+      border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;
+      display:inline-block;vertical-align:middle;margin-right:6px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* form panels */
+    #form-cadastro{display:none}
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">🏢</div>
+    <span class="logo-text">ImobiAI</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-login" onclick="switchTab('login')">Entrar</button>
+    <button class="tab" id="tab-cadastro" onclick="switchTab('cadastro')">Criar conta</button>
+  </div>
+
+  <div id="alert" class="alert"></div>
+
+  <!-- LOGIN -->
+  <form id="form-login" onsubmit="doLogin(event)">
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email"/>
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="login-senha" placeholder="••••••••" required autocomplete="current-password"/>
+    </div>
+    <button type="submit" class="btn" id="btn-login">Entrar</button>
+  </form>
+
+  <!-- CADASTRO -->
+  <form id="form-cadastro" onsubmit="doCadastro(event)">
+    <div class="field">
+      <label>Nome completo</label>
+      <input type="text" id="cad-nome" placeholder="Seu nome" required/>
+    </div>
+    <div class="field">
+      <label>E-mail</label>
+      <input type="email" id="cad-email" placeholder="seu@email.com" required autocomplete="email"/>
+    </div>
+    <div class="field">
+      <label>Senha</label>
+      <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" required minlength="6" autocomplete="new-password"/>
+    </div>
+    <div class="field">
+      <label>Perfil</label>
+      <select id="cad-tipo">
+        <option value="Imobiliária">Imobiliária</option>
+        <option value="Corretor">Corretor de Imóveis</option>
+        <option value="Proprietário">Proprietário</option>
+        <option value="Advogado">Advogado</option>
+        <option value="Outro">Outro</option>
+      </select>
+    </div>
+    <button type="submit" class="btn" id="btn-cadastro">Criar conta grátis</button>
+  </form>
+
+  <div class="divider">ou</div>
+  <button class="btn-ghost" onclick="continuarSemLogin()">Continuar sem login</button>
+
+  <div class="footer-link">
+    <a href="index.html">← Voltar ao site</a>
+  </div>
+</div>
+
+<script>
+  const AUTH_URL = 'https://imobi-ai-assistant-20aec671.base44.app/functions/authUsuarios';
+
+  function switchTab(tab) {
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-cadastro').classList.toggle('active', tab === 'cadastro');
+    document.getElementById('form-login').style.display   = tab === 'login'    ? '' : 'none';
+    document.getElementById('form-cadastro').style.display = tab === 'cadastro' ? '' : 'none';
+    hideAlert();
+  }
+
+  function showAlert(msg, type = 'error') {
+    const el = document.getElementById('alert');
+    el.textContent = msg; el.className = `alert ${type}`;
+    el.style.display = 'block';
+  }
+  function hideAlert() { document.getElementById('alert').style.display = 'none'; }
+
+  function setLoading(btnId, loading) {
+    const btn = document.getElementById(btnId);
+    btn.disabled = loading;
+    btn.innerHTML = loading ? '<span class="spinner"></span>Aguarde...' : btn.dataset.label;
+  }
+
+  document.getElementById('btn-login').dataset.label    = 'Entrar';
+  document.getElementById('btn-cadastro').dataset.label = 'Criar conta grátis';
+
+  async function doLogin(e) {
+    e.preventDefault(); hideAlert();
+    const email = document.getElementById('login-email').value;
+    const senha = document.getElementById('login-senha').value;
+    setLoading('btn-login', true);
+    try {
+      const r = await fetch(AUTH_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acao: 'login', email, senha })
+      });
+      const d = await r.json();
+      if (!d.ok) { showAlert(d.erro || 'Erro ao fazer login'); return; }
+      salvarSessao(d.token, d.usuario);
+      window.location.href = 'chat.html';
+    } catch { showAlert('Erro de conexão. Tente novamente.'); }
+    finally { setLoading('btn-login', false); }
+  }
+
+  async function doCadastro(e) {
+    e.preventDefault(); hideAlert();
+    const nome        = document.getElementById('cad-nome').value;
+    const email       = document.getElementById('cad-email').value;
+    const senha       = document.getElementById('cad-senha').value;
+    const tipo_usuario = document.getElementById('cad-tipo').value;
+    setLoading('btn-cadastro', true);
+    try {
+      const r = await fetch(AUTH_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ acao: 'registro', email, senha, nome, tipo_usuario })
+      });
+      const d = await r.json();
+      if (!d.ok) { showAlert(d.erro || 'Erro ao cadastrar'); return; }
+      salvarSessao(d.token, d.usuario);
+      showAlert('Conta criada com sucesso! Redirecionando...', 'success');
+      setTimeout(() => { window.location.href = 'chat.html'; }, 1200);
+    } catch { showAlert('Erro de conexão. Tente novamente.'); }
+    finally { setLoading('btn-cadastro', false); }
+  }
+
+  function salvarSessao(token, usuario) {
+    localStorage.setItem('imobiai_token',   token);
+    localStorage.setItem('imobiai_usuario', JSON.stringify(usuario));
+  }
+
+  function continuarSemLogin() {
+    localStorage.removeItem('imobiai_token');
+    localStorage.removeItem('imobiai_usuario');
+    window.location.href = 'chat.html';
+  }
+
+  // se já logado, redirecionar
+  const tokenExistente = localStorage.getItem('imobiai_token');
+  if (tokenExistente) window.location.href = 'chat.html';
+</script>
+</body>
+</html>

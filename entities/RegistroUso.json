@@ -1,0 +1,28 @@
+{
+  "type": "object",
+  "properties": {
+    "user_email": {
+      "type": "string"
+    },
+    "user_nome": {
+      "type": "string"
+    },
+    "tipo_usuario": {
+      "type": "string"
+    },
+    "pergunta": {
+      "type": "string"
+    },
+    "tokens_usados": {
+      "type": "number"
+    },
+    "plano": {
+      "type": "string"
+    },
+    "origem": {
+      "type": "string"
+    }
+  },
+  "required": [],
+  "name": "RegistroUso"
+}

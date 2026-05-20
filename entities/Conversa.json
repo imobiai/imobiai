@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "rls_enabled": true,
   "properties": {
     "titulo": {
       "type": "string"
@@ -16,9 +17,11 @@
         "ativa",
         "arquivada"
       ]
+    },
+    "user_email": {
+      "type": "string"
     }
   },
-  "rls_enabled": false,
   "required": [],
   "name": "Conversa"
 }

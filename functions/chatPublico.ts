@@ -26,57 +26,86 @@ Formato das respostas:
 - Organize em tópicos quando necessário
 - Destaque pontos críticos ou alertas importantes`;
 
-const CORS_HEADERS = {
+const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+const SECRET = 'imobiai-jwt-secret-2026';
+const APP_ID = '6a0cc4f6b295247520aec671';
+
+async function verifyJWT(token: string): Promise<any | null> {
+  try {
+    const [h, b, s] = token.split('.');
+    const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(SECRET),
+      { name: 'HMAC', hash: 'SHA-256' }, false, ['verify']);
+    const ok = await crypto.subtle.verify('HMAC', key,
+      Uint8Array.from(atob(s), c => c.charCodeAt(0)),
+      new TextEncoder().encode(`${h}.${b}`));
+    if (!ok) return null;
+    const p = JSON.parse(atob(b));
+    return p.exp > Date.now() ? p : null;
+  } catch { return null; }
+}
+
+async function registrarUso(data: object) {
+  try {
+    const apiKey = Deno.env.get('BASE44_API_KEY') || '';
+    await fetch(`https://api.base44.com/api/apps/${APP_ID}/entities/RegistroUso`, {
+      method: 'POST',
+      headers: { 'x-api-key': apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+  } catch { /* não bloqueia */ }
+}
+
 Deno.serve(async (req) => {
-  // Responde preflight CORS
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS_HEADERS });
-  }
+  if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
 
   try {
     const body = await req.json().catch(() => ({}));
-    const { mensagem, historico = [], tipo_usuario = 'Visitante' } = body;
+    const { mensagem, historico = [], tipo_usuario = 'Visitante', token } = body;
 
-    if (!mensagem) {
-      return Response.json({ error: 'Mensagem é obrigatória' }, { status: 400, headers: CORS_HEADERS });
-    }
+    if (!mensagem)
+      return Response.json({ error: 'Mensagem é obrigatória' }, { status: 400, headers: CORS });
+
+    const usuario = token ? await verifyJWT(token) : null;
 
     const apiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!apiKey) {
-      return Response.json({ error: 'Chave da API não configurada' }, { status: 500, headers: CORS_HEADERS });
-    }
+    if (!apiKey)
+      return Response.json({ error: 'Chave da API não configurada' }, { status: 500, headers: CORS });
 
     const openai = new OpenAI({ apiKey });
+    const tipoLabel = usuario?.tipo_usuario || tipo_usuario;
 
     const messages = [
-      { role: 'system', content: `${SYSTEM_PROMPT}\n\nPerfil do usuário atual: ${tipo_usuario}` },
+      { role: 'system', content: `${SYSTEM_PROMPT}\n\nPerfil do usuário atual: ${tipoLabel}` },
       ...historico.slice(-8),
       { role: 'user', content: mensagem }
     ];
 
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages,
-      temperature: 0.3,
-      max_tokens: 1200,
+      model: 'gpt-4o-mini', messages, temperature: 0.3, max_tokens: 1200,
     });
 
     const resposta = completion.choices[0].message.content;
+    const tokens_usados = completion.usage?.total_tokens || 0;
 
-    return Response.json(
-      { resposta, tokens_usados: completion.usage?.total_tokens || 0 },
-      { headers: CORS_HEADERS }
-    );
+    // Registrar uso sem bloquear
+    registrarUso({
+      user_email:   usuario?.email || 'anonimo',
+      user_nome:    usuario?.nome  || 'Visitante',
+      tipo_usuario: tipoLabel,
+      plano:        usuario?.plano || 'free',
+      pergunta:     mensagem.slice(0, 200),
+      tokens_usados,
+      origem:       token ? 'autenticado' : 'publico',
+    });
 
-  } catch (error) {
-    return Response.json(
-      { error: error.message },
-      { status: 500, headers: CORS_HEADERS }
-    );
+    return Response.json({ resposta, tokens_usados }, { headers: CORS });
+
+  } catch (error: any) {
+    return Response.json({ error: error.message }, { status: 500, headers: CORS });
   }
 });

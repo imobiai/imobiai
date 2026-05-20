@@ -350,11 +350,23 @@
     </div>
 
     <div class="sidebar-footer">
+      <div id="user-info-sidebar" style="display:none;padding:6px 10px 10px;border-bottom:1px solid var(--sidebar-border);margin-bottom:4px">
+        <div style="font-size:.7rem;color:var(--text-muted)">Conectado como</div>
+        <div id="user-nome-sidebar" style="font-size:.82rem;color:var(--text-primary);font-weight:500;margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+        <div id="user-badge-sidebar" style="display:inline-block;margin-top:4px;padding:2px 7px;border-radius:999px;font-size:.65rem;font-weight:600;background:rgba(37,99,235,.2);color:#60a5fa;border:1px solid rgba(37,99,235,.3)"></div>
+      </div>
       <a href="index.html" class="sidebar-footer-btn">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
         Página inicial
       </a>
-
+      <a href="admin.html" id="link-admin" class="sidebar-footer-btn" style="display:none">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        Painel Admin
+      </a>
+      <button id="btn-auth" onclick="handleAuth()" class="sidebar-footer-btn" style="background:none;border:none;font-family:inherit;cursor:pointer;width:100%;text-align:left">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        <span id="btn-auth-text">Entrar / Cadastrar</span>
+      </button>
     </div>
   </aside>
 
@@ -441,7 +453,51 @@
 </div>
 
 <script>
-  const API_URL = 'https://imobi-ai-assistant-20aec671.base44.app/functions/chatPublico';
+  const API_URL  = 'https://imobi-ai-assistant-20aec671.base44.app/functions/chatPublico';
+  const AUTH_URL = 'https://imobi-ai-assistant-20aec671.base44.app/functions/authUsuarios';
+
+  // ── AUTH STATE ──
+  let currentUser = null;
+  let authToken   = null;
+
+  function loadAuth() {
+    authToken   = localStorage.getItem('imobiai_token');
+    currentUser = JSON.parse(localStorage.getItem('imobiai_usuario') || 'null');
+    updateAuthUI();
+  }
+
+  function updateAuthUI() {
+    const infoEl  = document.getElementById('user-info-sidebar');
+    const nomeEl  = document.getElementById('user-nome-sidebar');
+    const badgeEl = document.getElementById('user-badge-sidebar');
+    const btnText = document.getElementById('btn-auth-text');
+    const adminLink = document.getElementById('link-admin');
+
+    if (currentUser) {
+      infoEl.style.display  = '';
+      nomeEl.textContent    = currentUser.nome || currentUser.email;
+      badgeEl.textContent   = (currentUser.plano || 'free').toUpperCase();
+      btnText.textContent   = 'Sair';
+      if (currentUser.plano === 'admin') adminLink.style.display = '';
+    } else {
+      infoEl.style.display  = 'none';
+      btnText.textContent   = 'Entrar / Cadastrar';
+      adminLink.style.display = 'none';
+    }
+  }
+
+  function handleAuth() {
+    if (currentUser) {
+      localStorage.removeItem('imobiai_token');
+      localStorage.removeItem('imobiai_usuario');
+      currentUser = null; authToken = null;
+      updateAuthUI();
+      // limpar histórico da sessão local ao deslogar
+      startNewChat();
+    } else {
+      window.location.href = 'login.html';
+    }
+  }
 
   const input       = document.getElementById('chat-input');
   const sendBtn     = document.getElementById('send-btn');
@@ -581,7 +637,7 @@
       const res = await fetch(API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mensagem: text, tipo_usuario: 'Visitante', historico: messages.slice(-8) })
+        body: JSON.stringify({ mensagem: text, tipo_usuario: currentUser?.tipo_usuario || 'Visitante', historico: messages.slice(-8), token: authToken || undefined })
       });
       const data = await res.json();
       removeTyping();
@@ -696,6 +752,7 @@
   }
 
   // ── INIT ──
+  loadAuth();
   currentSessionId = Date.now().toString();
   renderHistory();
 </script>
