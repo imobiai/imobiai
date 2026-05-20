@@ -1,13 +1,18 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { User } from "@/api/entities";
+import { User, Conversa, Documento } from "@/api/entities";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [usuario, setUsuario] = useState(null);
+  const [conversasRecentes, setConversasRecentes] = useState([]);
+  const [docRecentes, setDocRecentes] = useState([]);
+  const [sidebarAberta, setSidebarAberta] = useState(false);
 
   useEffect(() => {
     User.me().then(setUsuario).catch(() => {});
+    Conversa.list("-created_date").then((c) => setConversasRecentes(c.slice(0, 8))).catch(() => {});
+    Documento.list("-created_date").then((d) => setDocRecentes(d.slice(0, 5))).catch(() => {});
   }, []);
 
   const handleLogout = async () => {
@@ -15,129 +20,211 @@ export default function Dashboard() {
     window.location.href = "/login";
   };
 
-  const cards = [
+  const sugestoes = [
     {
-      icon: "💬",
-      title: "Consulta Jurídica",
-      desc: "Tire dúvidas sobre locação, compra e venda, contratos e muito mais.",
-      color: "from-blue-500 to-blue-700",
-      path: "/chat",
+      icon: "📋",
+      titulo: "Contrato de locação",
+      desc: "Gerar contrato residencial completo",
+      acao: () => navigate("/documentos/novo"),
     },
     {
-      icon: "📄",
-      title: "Gerar Documentos",
-      desc: "Crie contratos, notificações, rescisões e propostas automaticamente.",
-      color: "from-green-500 to-green-700",
-      path: "/documentos/novo",
+      icon: "⚖️",
+      titulo: "Direitos do inquilino",
+      desc: "Quais são meus direitos como locatário?",
+      acao: () => navigate("/chat", { state: { perguntaInicial: "Quais são os direitos do inquilino na Lei do Inquilinato?" } }),
     },
     {
-      icon: "📁",
-      title: "Meus Documentos",
-      desc: "Acesse e gerencie todos os documentos gerados.",
-      color: "from-purple-500 to-purple-700",
-      path: "/documentos",
+      icon: "📮",
+      titulo: "Notificação extrajudicial",
+      desc: "Notificar inquilino inadimplente",
+      acao: () => navigate("/documentos/novo"),
     },
     {
-      icon: "💼",
-      title: "Histórico de Consultas",
-      desc: "Reveja suas conversas e consultas anteriores.",
-      color: "from-orange-500 to-orange-700",
-      path: "/historico",
+      icon: "🔑",
+      titulo: "Rescisão antecipada",
+      desc: "O que diz a lei sobre rescisão antes do prazo?",
+      acao: () => navigate("/chat", { state: { perguntaInicial: "Quais as regras para rescisão antecipada de contrato de locação?" } }),
     },
   ];
 
-  const exemplos = [
-    "Qual o prazo mínimo de contrato de locação residencial?",
-    "O locatário pode sublocar o imóvel sem autorização?",
-    "Como funciona a garantia por fiança?",
-    "Quais são os direitos do locatário em caso de venda do imóvel?",
-    "O que é caução e qual o valor máximo permitido?",
-    "Como notificar o inquilino por inadimplência?",
-  ];
+  const primeiroNome = usuario?.full_name?.split(" ")[0] || null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white px-6 py-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-1">
-                <span className="text-4xl">🏢</span>
-                <h1 className="text-3xl font-bold">ImobiAI</h1>
-              </div>
-              <p className="text-blue-200 text-sm">
-                IA especializada em Direito Imobiliário Brasileiro
-              </p>
-            </div>
-            {usuario && (
-              <div className="text-right">
-                <p className="text-blue-100 text-sm font-medium">
-                  👤 {usuario.full_name || usuario.email}
-                </p>
-                {usuario.tipo_usuario && (
-                  <p className="text-blue-300 text-xs">{usuario.tipo_usuario}</p>
-                )}
-                <div className="flex items-center justify-end gap-3 mt-2">
-                  {usuario.role === "admin" && (
-                    <button
-                      onClick={() => navigate("/admin")}
-                      className="text-xs bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded-lg font-medium"
-                    >
-                      🛡️ Admin
-                    </button>
-                  )}
-                  <button
-                    onClick={handleLogout}
-                    className="text-xs text-blue-300 hover:text-white underline"
-                  >
-                    Sair
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="flex h-screen bg-[#212121] text-white overflow-hidden">
 
-      <div className="max-w-4xl mx-auto px-6 py-8">
-        {/* Cards principais */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
-          {cards.map((card) => (
+      {/* SIDEBAR */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-40 flex flex-col bg-[#171717] w-64 transform transition-transform duration-300 ${
+          sidebarAberta ? "translate-x-0" : "-translate-x-full"
+        } md:relative md:translate-x-0 md:flex md:w-64`}
+      >
+        {/* Logo */}
+        <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
+          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-lg">🏢</div>
+          <span className="font-semibold text-white text-base">ImobiAI</span>
+        </div>
+
+        {/* Novo Chat */}
+        <div className="px-3 pt-3">
+          <button
+            onClick={() => navigate("/chat")}
+            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 transition"
+          >
+            <span className="text-lg">✏️</span>
+            <span>Nova consulta</span>
+          </button>
+          <button
+            onClick={() => navigate("/documentos/novo")}
+            className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10 transition"
+          >
+            <span className="text-lg">📄</span>
+            <span>Novo documento</span>
+          </button>
+        </div>
+
+        {/* Histórico recente */}
+        <div className="flex-1 overflow-y-auto px-3 pt-5 pb-3">
+          {conversasRecentes.length > 0 && (
+            <>
+              <p className="text-xs text-white/40 font-medium px-2 mb-2 uppercase tracking-wider">Recentes</p>
+              {conversasRecentes.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => navigate("/historico")}
+                  className="w-full text-left px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-white/10 truncate transition"
+                >
+                  {c.titulo}
+                </button>
+              ))}
+            </>
+          )}
+
+          {docRecentes.length > 0 && (
+            <>
+              <p className="text-xs text-white/40 font-medium px-2 mt-4 mb-2 uppercase tracking-wider">Documentos</p>
+              {docRecentes.map((d) => (
+                <button
+                  key={d.id}
+                  onClick={() => navigate("/documentos")}
+                  className="w-full text-left px-3 py-2 rounded-lg text-sm text-white/70 hover:bg-white/10 truncate transition"
+                >
+                  📄 {d.titulo}
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+
+        {/* Footer do sidebar */}
+        <div className="border-t border-white/10 p-3 space-y-1">
+          {usuario?.role === "admin" && (
             <button
-              key={card.path}
-              onClick={() => navigate(card.path)}
-              className={`bg-gradient-to-br ${card.color} text-white rounded-2xl p-6 text-left shadow-lg hover:scale-105 transition-transform`}
+              onClick={() => navigate("/admin")}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-white/10 transition"
             >
-              <div className="text-3xl mb-3">{card.icon}</div>
-              <h2 className="text-xl font-bold mb-1">{card.title}</h2>
-              <p className="text-white/80 text-sm">{card.desc}</p>
+              <span>🛡️</span> Painel Admin
             </button>
-          ))}
-        </div>
+          )}
+          <button
+            onClick={() => navigate("/historico")}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/60 hover:bg-white/10 transition"
+          >
+            <span>💼</span> Histórico
+          </button>
+          <button
+            onClick={() => navigate("/documentos")}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-white/60 hover:bg-white/10 transition"
+          >
+            <span>📁</span> Meus documentos
+          </button>
 
-        {/* Perguntas rápidas */}
-        <div className="bg-white rounded-2xl shadow p-6">
-          <h3 className="text-gray-700 font-semibold mb-4 flex items-center gap-2">
-            <span>⚡</span> Perguntas frequentes — clique para consultar
-          </h3>
-          <div className="flex flex-wrap gap-2">
-            {exemplos.map((ex) => (
-              <button
-                key={ex}
-                onClick={() => navigate("/chat", { state: { perguntaInicial: ex } })}
-                className="bg-blue-50 text-blue-700 border border-blue-200 rounded-full px-4 py-2 text-sm hover:bg-blue-100 transition"
-              >
-                {ex}
-              </button>
-            ))}
+          {/* Usuário */}
+          {usuario && (
+            <div className="flex items-center gap-2 px-3 py-2 mt-1 rounded-lg hover:bg-white/10 transition cursor-pointer group" onClick={handleLogout}>
+              <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                {(usuario.full_name || usuario.email || "U")[0].toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-white/80 truncate">{usuario.full_name || usuario.email}</p>
+                {usuario.tipo_usuario && (
+                  <p className="text-xs text-white/40 truncate">{usuario.tipo_usuario}</p>
+                )}
+              </div>
+              <span className="text-xs text-white/30 group-hover:text-white/60">→</span>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Overlay mobile */}
+      {sidebarAberta && (
+        <div
+          className="fixed inset-0 z-30 bg-black/50 md:hidden"
+          onClick={() => setSidebarAberta(false)}
+        />
+      )}
+
+      {/* CONTEÚDO PRINCIPAL */}
+      <main className="flex-1 flex flex-col overflow-hidden">
+        {/* Topbar mobile */}
+        <div className="flex items-center px-4 py-3 md:hidden border-b border-white/10">
+          <button onClick={() => setSidebarAberta(true)} className="text-white/60 hover:text-white text-xl mr-3">
+            ☰
+          </button>
+          <div className="flex items-center gap-2">
+            <span>🏢</span>
+            <span className="font-semibold text-sm">ImobiAI</span>
           </div>
         </div>
 
-        <p className="text-center text-gray-400 text-xs mt-8">
-          ⚠️ As respostas do ImobiAI são orientativas e não substituem consultoria jurídica formal.
-        </p>
-      </div>
+        {/* Área central */}
+        <div className="flex-1 overflow-y-auto flex flex-col items-center justify-center px-4 py-12">
+          <div className="w-full max-w-2xl">
+
+            {/* Saudação */}
+            <div className="text-center mb-10">
+              <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-3xl mx-auto mb-5 shadow-lg">
+                🏢
+              </div>
+              <h1 className="text-3xl font-semibold text-white mb-2">
+                {primeiroNome ? `Olá, ${primeiroNome}` : "Olá!"}
+              </h1>
+              <p className="text-white/50 text-lg">Como posso ajudar com direito imobiliário hoje?</p>
+            </div>
+
+            {/* Barra de pergunta rápida */}
+            <div
+              onClick={() => navigate("/chat")}
+              className="w-full flex items-center gap-3 bg-[#2f2f2f] hover:bg-[#3a3a3a] border border-white/10 rounded-2xl px-5 py-4 cursor-pointer transition mb-8 group"
+            >
+              <span className="text-white/40 text-lg">🔍</span>
+              <span className="text-white/40 text-sm flex-1">Faça uma pergunta jurídica...</span>
+              <span className="text-white/20 group-hover:text-white/40 text-sm transition">↵</span>
+            </div>
+
+            {/* Sugestões */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {sugestoes.map((s, i) => (
+                <button
+                  key={i}
+                  onClick={s.acao}
+                  className="flex items-start gap-3 bg-[#2f2f2f] hover:bg-[#3a3a3a] border border-white/10 rounded-xl px-4 py-4 text-left transition group"
+                >
+                  <span className="text-xl mt-0.5 flex-shrink-0">{s.icon}</span>
+                  <div>
+                    <p className="text-sm font-medium text-white/90 group-hover:text-white transition">{s.titulo}</p>
+                    <p className="text-xs text-white/40 mt-0.5">{s.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <p className="text-center text-white/20 text-xs mt-10">
+              ImobiAI pode cometer erros. Consulte um advogado para decisões importantes.
+            </p>
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
