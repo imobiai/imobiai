@@ -10,14 +10,15 @@ export default function Dashboard() {
   const [sidebarAberta, setSidebarAberta] = useState(false);
 
   useEffect(() => {
-    User.me().then(setUsuario).catch(() => {});
+    User.me().then(setUsuario).catch(() => setUsuario(null));
     Conversa.list("-created_date").then((c) => setConversasRecentes(c.slice(0, 8))).catch(() => {});
     Documento.list("-created_date").then((d) => setDocRecentes(d.slice(0, 5))).catch(() => {});
   }, []);
 
   const handleLogout = async () => {
     await User.logout();
-    window.location.href = "/login";
+    setUsuario(null);
+    window.location.reload();
   };
 
   const sugestoes = [
@@ -64,7 +65,7 @@ export default function Dashboard() {
           <span className="font-semibold text-white text-base">ImobiAI</span>
         </div>
 
-        {/* Novo Chat */}
+        {/* Ações rápidas */}
         <div className="px-3 pt-3">
           <button
             onClick={() => navigate("/chat")}
@@ -98,7 +99,6 @@ export default function Dashboard() {
               ))}
             </>
           )}
-
           {docRecentes.length > 0 && (
             <>
               <p className="text-xs text-white/40 font-medium px-2 mt-4 mb-2 uppercase tracking-wider">Documentos</p>
@@ -138,9 +138,12 @@ export default function Dashboard() {
             <span>📁</span> Meus documentos
           </button>
 
-          {/* Usuário */}
-          {usuario && (
-            <div className="flex items-center gap-2 px-3 py-2 mt-1 rounded-lg hover:bg-white/10 transition cursor-pointer group" onClick={handleLogout}>
+          {/* Usuário logado ou botão de login */}
+          {usuario ? (
+            <div
+              className="flex items-center gap-2 px-3 py-2 mt-1 rounded-lg hover:bg-white/10 transition cursor-pointer group"
+              onClick={handleLogout}
+            >
               <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-sm font-bold flex-shrink-0">
                 {(usuario.full_name || usuario.email || "U")[0].toUpperCase()}
               </div>
@@ -150,8 +153,15 @@ export default function Dashboard() {
                   <p className="text-xs text-white/40 truncate">{usuario.tipo_usuario}</p>
                 )}
               </div>
-              <span className="text-xs text-white/30 group-hover:text-white/60">→</span>
+              <span className="text-xs text-white/30 group-hover:text-white/60 transition">Sair</span>
             </div>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-blue-400 hover:bg-white/10 transition"
+            >
+              <span>🔐</span> Entrar / Criar conta
+            </button>
           )}
         </div>
       </aside>
@@ -187,7 +197,7 @@ export default function Dashboard() {
                 🏢
               </div>
               <h1 className="text-3xl font-semibold text-white mb-2">
-                {primeiroNome ? `Olá, ${primeiroNome}` : "Olá!"}
+                {primeiroNome ? `Olá, ${primeiroNome}!` : "Olá!"}
               </h1>
               <p className="text-white/50 text-lg">Como posso ajudar com direito imobiliário hoje?</p>
             </div>
