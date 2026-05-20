@@ -78,12 +78,22 @@ export default function Dashboard() {
                 {usuario.tipo_usuario && (
                   <p className="text-blue-300 text-xs">{usuario.tipo_usuario}</p>
                 )}
-                <button
-                  onClick={handleLogout}
-                  className="mt-2 text-xs text-blue-300 hover:text-white underline"
-                >
-                  Sair
-                </button>
+                <div className="flex items-center justify-end gap-3 mt-2">
+                  {usuario.role === "admin" && (
+                    <button
+                      onClick={() => navigate("/admin")}
+                      className="text-xs bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded-lg font-medium"
+                    >
+                      🛡️ Admin
+                    </button>
+                  )}
+                  <button
+                    onClick={handleLogout}
+                    className="text-xs text-blue-300 hover:text-white underline"
+                  >
+                    Sair
+                  </button>
+                </div>
               </div>
             )}
           </div>

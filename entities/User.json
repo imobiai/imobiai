@@ -10,6 +10,15 @@
         "Advogado",
         "Outro"
       ]
+    },
+    "plano": {
+      "type": "string",
+      "enum": [
+        "free",
+        "pro",
+        "admin"
+      ],
+      "default": "free"
     }
   },
   "required": []

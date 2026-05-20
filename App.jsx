@@ -7,9 +7,10 @@ import GerarDocumento from "./pages/GerarDocumento";
 import ListaDocumentos from "./pages/ListaDocumentos";
 import Historico from "./pages/Historico";
 import Login from "./pages/Login";
+import Admin from "./pages/Admin";
 
 function RotaProtegida({ children }) {
-  const [usuario, setUsuario] = useState(undefined); // undefined = carregando
+  const [usuario, setUsuario] = useState(undefined);
 
   useEffect(() => {
     User.me()
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="/documentos/novo" element={<RotaProtegida><GerarDocumento /></RotaProtegida>} />
         <Route path="/documentos" element={<RotaProtegida><ListaDocumentos /></RotaProtegida>} />
         <Route path="/historico" element={<RotaProtegida><Historico /></RotaProtegida>} />
+        <Route path="/admin" element={<RotaProtegida><Admin /></RotaProtegida>} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
