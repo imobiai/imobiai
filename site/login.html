@@ -82,7 +82,8 @@
     @keyframes spin{to{transform:rotate(360deg)}}
 
     /* form panels */
-    #form-cadastro{display:none}
+    .form-panel { display: none !important; }
+    .form-panel.visible { display: block !important; }
   </style>
 </head>
 <body>
@@ -101,7 +102,7 @@
   <div id="alert" class="alert"></div>
 
   <!-- LOGIN -->
-  <form id="form-login" onsubmit="doLogin(event)">
+  <form id="form-login" class="form-panel visible" onsubmit="doLogin(event)">
     <div class="field">
       <label>E-mail</label>
       <input type="email" id="login-email" placeholder="seu@email.com" required autocomplete="email"/>
@@ -114,7 +115,7 @@
   </form>
 
   <!-- CADASTRO -->
-  <form id="form-cadastro" onsubmit="doCadastro(event)">
+  <form id="form-cadastro" class="form-panel" onsubmit="doCadastro(event)">
     <div class="field">
       <label>Nome completo</label>
       <input type="text" id="cad-nome" placeholder="Seu nome" required/>
@@ -154,8 +155,8 @@
   function switchTab(tab) {
     document.getElementById('tab-login').classList.toggle('active', tab === 'login');
     document.getElementById('tab-cadastro').classList.toggle('active', tab === 'cadastro');
-    document.getElementById('form-login').style.display   = tab === 'login'    ? '' : 'none';
-    document.getElementById('form-cadastro').style.display = tab === 'cadastro' ? '' : 'none';
+    document.getElementById('form-login').classList.toggle('visible', tab === 'login');
+    document.getElementById('form-cadastro').classList.toggle('visible', tab === 'cadastro');
     hideAlert();
   }
 
