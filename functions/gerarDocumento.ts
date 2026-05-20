@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import OpenAI from 'npm:openai@4.28.0';
 
 const TEMPLATES = {
@@ -56,12 +55,6 @@ Dados adicionais: {dados_adicionais}`,
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await req.json().catch(() => ({}));
     const { tipo_documento, dados } = body;
 
@@ -80,7 +73,6 @@ Deno.serve(async (req) => {
     if (!promptTemplate) {
       promptTemplate = `Gere um documento jurídico do tipo "${tipo_documento}" com os seguintes dados: ${JSON.stringify(dados)}`;
     } else {
-      // Substituir placeholders pelos dados fornecidos
       for (const [key, value] of Object.entries(dados)) {
         promptTemplate = promptTemplate.replace(`{${key}}`, String(value) || 'Não informado');
       }

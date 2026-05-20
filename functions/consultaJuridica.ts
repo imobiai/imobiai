@@ -1,4 +1,3 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 import OpenAI from 'npm:openai@4.28.0';
 
 const SYSTEM_PROMPT = `Você é o ImobiAI, um assistente jurídico especializado em direito imobiliário brasileiro.
@@ -29,12 +28,6 @@ Formato das respostas:
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
-    const user = await base44.auth.me();
-    if (!user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await req.json().catch(() => ({}));
     const { mensagem, historico = [], tipo_usuario = 'Outro' } = body;
 
@@ -49,11 +42,9 @@ Deno.serve(async (req) => {
 
     const openai = new OpenAI({ apiKey });
 
-    const systemPromptComPerfil = `${SYSTEM_PROMPT}\n\nPerfil do usuário atual: ${tipo_usuario}`;
-
     const messages = [
-      { role: 'system', content: systemPromptComPerfil },
-      ...historico.slice(-10), // últimas 10 mensagens para contexto
+      { role: 'system', content: `${SYSTEM_PROMPT}\n\nPerfil do usuário atual: ${tipo_usuario}` },
+      ...historico.slice(-10),
       { role: 'user', content: mensagem }
     ];
 
