@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "titulo": {
+      "type": "string"
+    },
+    "tipo_usuario": {
+      "type": "string",
+      "enum": [
+        "Imobili\u00e1ria",
+        "Corretor",
+        "Propriet\u00e1rio",
+        "Advogado",
+        "Outro"
+      ]
+    },
+    "mensagens": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "ativa",
+        "encerrada"
+      ]
+    }
+  },
+  "required": [],
+  "name": "Conversa"
+}
