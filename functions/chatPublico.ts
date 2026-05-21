@@ -60,6 +60,17 @@ async function registrarUso(data: object) {
   } catch { /* não bloqueia */ }
 }
 
+// Normaliza o role do histórico — converte 'bot' → 'assistant' e garante apenas roles válidos
+function normalizarHistorico(historico: any[]): { role: string; content: string }[] {
+  const ROLES_VALIDOS = new Set(['user', 'assistant', 'system']);
+  return historico
+    .filter((m: any) => m && m.content)
+    .map((m: any) => ({
+      role:    m.role === 'bot' ? 'assistant' : (ROLES_VALIDOS.has(m.role) ? m.role : 'user'),
+      content: String(m.content),
+    }));
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
 
@@ -81,8 +92,8 @@ Deno.serve(async (req) => {
 
     const messages = [
       { role: 'system', content: `${SYSTEM_PROMPT}\n\nPerfil do usuário atual: ${tipoLabel}` },
-      ...historico.slice(-8),
-      { role: 'user', content: mensagem }
+      ...normalizarHistorico(historico).slice(-8),
+      { role: 'user', content: mensagem },
     ];
 
     const completion = await openai.chat.completions.create({
